@@ -1,25 +1,46 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import CreatePost from './Pages/CreatePost';
+import Home from './Pages/Home';
+import Login from './Pages/Login';
+import "./App.css";
+import { signOut } from "firebase/auth";
+import { auth } from "./Firebase/firebase-config";
 
-function App() {
+const App = () => {
+  const [isAuth, setIsAuth] = useState(localStorage.getItem("isAuth"))
+
+  const signUserOut = () => {
+    signOut(auth).then(() => {
+      localStorage.clear()
+      setIsAuth(false)
+      window.location.pathname = "/login"
+
+    }).catch((error) => {
+      console.log(error);
+    });
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Router>
+      <nav>
+        <Link to="/">Home</Link>
+        {isAuth && (
+          <Link to="/CreatePost">CreatePost</Link>
+        )}
+        {!isAuth ? (
+          <Link to="/Login">Login</Link>
+        ) : (
+          <button className='nav' onClick={signUserOut}>LogOut</button>
+        )}
+      </nav>
+      <Routes>
+        <Route path="/" element={<Home isAuth={isAuth}/>}></Route>
+        <Route path="/CreatePost" element={<CreatePost isAuth={isAuth}/>}></Route>
+        <Route path="/Login" element={<Login setIsAuth={setIsAuth} />}></Route>
+      </Routes>
+    </Router>
+  )
 }
 
-export default App;
+export default App
